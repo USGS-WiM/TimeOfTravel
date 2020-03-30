@@ -1,5 +1,5 @@
 
-<div id="leaflet"
+<div *ngIf="!report" id="leaflet"
      leaflet
      [leafletOptions]="MapOptions"
      (leafletMapReady)="onMapReady($event)"
@@ -7,4 +7,9 @@
      [leafletLayersControl]="LayersControl"
      (leafletZoomChange)="onZoomChange($event)"
      [leafletFitBounds]="fitBounds"
+     [leafletFitBoundsOptions]="{maxZoom: 13}"
      (leafletClick)="onMouseClick($event)"></div>
+
+<div *ngIf="report" class="map_container">
+    <div id="reportMap"></div>
+</div>

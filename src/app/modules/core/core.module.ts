@@ -1,4 +1,4 @@
-import {NgModule} from '@angular/core';
+import { NgModule } from '@angular/core';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { FooterComponent } from './components/footer/footer.component';
 import { MapComponent } from './components/map/map.component';
@@ -11,10 +11,10 @@ import { MatProgressButtonsModule } from 'mat-progress-buttons';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 import { NavigationService } from './services/navigationservices.service';
-import {MapService} from './services/map.services';
+import { MapService} from './services/map.services';
 import { StudyService } from './services/study.service';
 import { TravelTimeService } from './services/traveltimeservices.service';
-import {NgxPrintModule} from 'ngx-print';
+import { NgxPrintModule} from 'ngx-print';
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { NgbModule, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { AppchartsComponent } from './components/appcharts/appcharts.component';
@@ -25,9 +25,11 @@ import { NgSelectModule, NgOption } from '@ng-select/ng-select';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ReportModalComponent } from './components/report/report.component';
 import { ReportModule } from './components/report/report.module';
+import { Angulartics2Module } from 'angulartics2';
+import { AppChartsModule } from './components/appcharts/appcharts.module';
 
 @NgModule({
-    declarations: [SidebarComponent, CoreComponent, FooterComponent, AppchartsComponent],
+    declarations: [SidebarComponent, CoreComponent, FooterComponent],
   imports: [
     LeafletModule.forRoot(),
     FormsModule,
@@ -44,7 +46,9 @@ import { ReportModule } from './components/report/report.module';
     NgbModule,
     ChartsModule,
     MapModule,
-    ReportModule
+    ReportModule,
+    Angulartics2Module.forRoot(),
+    AppChartsModule
     ],
   providers: [MapService, NavigationService, StudyService, TravelTimeService, NgbActiveModal, ChartsService],
   exports: [SidebarComponent, MapComponent, CoreComponent, FooterComponent, AppchartsComponent, ReportModalComponent],

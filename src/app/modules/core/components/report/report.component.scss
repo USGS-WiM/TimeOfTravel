@@ -1,3 +1,5 @@
+@import "~bootstrap/dist/css/bootstrap.css";
+
 // Tables
 .table,
 .citations-table {
@@ -36,9 +38,9 @@
 
 
  #map_container {
-   height: auto;
+   height: 300px;
    width: auto;
-   margin-bottom: 1em;
+   margin-bottom: 1em !important;
  }
 
 
@@ -51,21 +53,42 @@
  }
 
 
-
 //  Print Styles
 @media print{
+	
+	body * {
+        visibility: hidden;
+    }
 	#printArea, #printArea * {
 		visibility: visible !important;
 	}
+	html,body{
+		overflow: visible !important;
+	}
 	#printArea {
-		position: fixed;
+		position: absolute;
 		left: 0;
 		top: 0;
 		width: 100%;
 		height: auto;
 	}
+	.modal-box{
+		width: 100%;
+		position: absolute;
+		top: 0;
+		left: 0;
+		margin: 0;
+		padding: 0;
+	}
 
-	  
+	.modal-wrapper{
+		display: block;
+		height: fit-content;
+		left: 0;
+		margin: 0;
+		padding: 0;
+		position: absolute;
+	}	  
 	
 	.hidden-print {
 		display: none !important;
@@ -116,6 +139,11 @@
 	.identifier {
 		padding-bottom: 2em;
 	}
+
+	.table {
+		overflow: visible;
+		max-height: none;
+	}
 }
 
 @media print and (-ms-high-contrast: none), (-ms-high-contrast: active) {
@@ -125,3 +153,15 @@
       position: relative;
   }
 }
+
+.hidden {
+	visibility: hidden;
+	height:1px;
+	overflow: hidden;
+}
+
+// .dropdown-menu {
+//     max-height: 150px;
+//     width: 90%;
+//     /*overflow-y:scroll;*/
+// }

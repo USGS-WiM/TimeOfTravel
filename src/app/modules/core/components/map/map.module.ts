@@ -10,13 +10,13 @@ import { MapService } from '../../services/map.services';
   imports: [
     CommonModule,
     FormsModule,
-    LeafletModule    
+    LeafletModule
   ],
-  exports: [ 
-    MapComponent 
+  exports: [
+    MapComponent
   ]
 })
-export class MapModule { 
+export class MapModule {
   // static forRoot() {
   //   return {
   //     ngModule: MapModule,

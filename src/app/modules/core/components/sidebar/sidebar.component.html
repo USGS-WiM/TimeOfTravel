@@ -115,7 +115,7 @@
 					<i [ngClass]="StudyService.checkingDelineatedPoint && SelectedMethodType === 'planning' ? 'far fa-sync fa-spin' : 'far fa-map-marker-alt'"></i>
 					Spill Planning
 				</button>
-				<button id="equations" class="full-width" (click)="open_config()">Configure</button>
+				<button [disabled]="this.StudyService.GetWorkFlow('totResults')" id="equations" class="full-width" (click)="open_config()">Configure</button>
 			  </div>
 		
 		</div>

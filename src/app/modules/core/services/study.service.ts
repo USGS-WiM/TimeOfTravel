@@ -112,7 +112,7 @@ export class StudyService  {
     }
 
     public isMetric(): boolean {
-      var tf;
+      let tf;
       this.units.forEach(j => {
         if (j.isactive) {
           if (j.name === 'imperial') {
@@ -151,7 +151,7 @@ export class StudyService  {
     }
 
     public ResetWorkFlow() {
-        for(var i in this._workflow) {
+        for(let i in this._workflow) {
            this._workflow[i] = false;
         }
         this.WorkFlowControl.next(this._workflow);

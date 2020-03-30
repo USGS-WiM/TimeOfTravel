@@ -135,14 +135,14 @@ export class DateTimePickerComponent implements ControlValueAccessor, OnInit, Af
     this.datetime.month = date.month;
     this.datetime.day = date.day;
 
-    if (this.dp) { this.dp.navigateTo({ year: this.datetime.year, month: this.datetime.month }) };
 
+    if (this.dp) { this.dp.navigateTo({ year: this.datetime.year, month: this.datetime.month }) };
     if (this.datetime.day < 10) {
-      var day = '0' + this.datetime.day;
+       var day = '0' + this.datetime.day;
     } else {
-      var day = String (this.datetime.day);
+       var day = String (this.datetime.day);
     }
-    this.StudyService.selectedStudy.SpillDate =  (this.datetime.year + '-' + this.datetime.month + '-' + day)
+    this.StudyService.selectedStudy.SpillDate =  (this.datetime.year + '-' + this.datetime.month + '-' + day);
     this.setDateStringModel();
   }
 

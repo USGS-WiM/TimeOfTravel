@@ -499,9 +499,9 @@ h2{
 	padding: 0 0 2px 0;
 	font-weight: 700;
 }
-h3, h4, h5{
+// h3, h4, h5{
 
-}
+// }
 h3{
 	font-size: 18px;
 	letter-spacing: 0.2px;
@@ -816,6 +816,11 @@ ul{
     }
 }
 
+.leaflet-pane.leaflet-map-pane {
+    width: 100% !important;
+    height: 100% !important;
+    transform: none;
+  }
 
 
 // Hide everything on print

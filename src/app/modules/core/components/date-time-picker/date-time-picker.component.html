@@ -11,7 +11,7 @@
   <div>
     <div *ngIf="!showTimePickerToggle">
       <ngb-datepicker #dp name="datepicker" [ngModel]="datetime" (ngModelChange)="onDateChange($event)"> </ngb-datepicker>
-      <button class="btn btn-block btn-outline-secondary" [disabled]="!datetime?.day" [ngbPopover]="timePickerContent" type="button" (click)="toggleDateTimeState($event)">
+      <button class="btn btn-block btn-outline-secondary" [disabled]="!datetime?.day" type="button" (click)="toggleDateTimeState($event)">
         <i class="far fa-clock"> </i>
         Time
       </button>

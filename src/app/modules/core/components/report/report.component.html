@@ -42,10 +42,7 @@
 
 			<!-- Map -->
 			<div *ngIf="StudyService.ReportOptions[0].checked">
-				<div id="map_container">
-					Map goes here
-					<tot-map class="full-map"></tot-map>
-				</div>
+					<tot-map id="mapWrapper" [report]="true"></tot-map>
 			</div>
 
 
@@ -54,20 +51,29 @@
 				<p>{{reportComments}}</p>
 			</div>
 
-
+			<!--Tables-->
 			<div *ngIf="StudyService.ReportOptions[1].checked">
 				<div class="table" id="scroll">
 				  	<h4>Most Probable</h4>
-				  	<table>			
+				  	<table id="MostProbTablePrint">
+						<tr>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th colspan="3" style="text-align:center;border-bottom: solid black 1px; padding: 4px 4px 4px 4px;">Time of</th>
+							<th></th>
+						</tr>
 						<tr style="border-bottom: solid black 1px; padding: 4px 4px 4px 4px;">
-							<th rowspan="2" vertical-align="center">Name</th>
+							<th rowspan="2" vertical-align="center">Reach ID</th>
 							<th title="{{ !StudyService.isMetric() ? 'cfs' : 'cms' }}">Discharge</th>
 							<th title="{{ !StudyService.isMetric() ? 'mi^2' : 'km^2' }}">Drainage area</th>
 							<th title="{{ !StudyService.isMetric() ? 'mi' : 'km' }}">Distance</th>
 							<th title="{{ !StudyService.isMetric() ? 'ft/s' : 'm/s' }}">Reach Velocity</th>
-							<th>Leading edge</th>
-							<th title="mg/L">Peak concentration</th>              
-							<th>Trailing edge at 10% peak concentration</th>
+							<th title="hours">Leading edge</th>
+							<th title="hours">Peak concentration</th>
+							<th title="hours">Trailing edge at 10% peak concentration</th>
 							<th title="mg/L">Peak concentration</th>
 						</tr>
 						<tr style="border-bottom: solid black 1px; padding: 4px 4px 4px 4px; vertical-align: center; text-align: center;">
@@ -85,23 +91,106 @@
 							<td>{{reach.name}}</td>
 							<ng-container *ngFor="let pars of reach.parameters">
 								<ng-container *ngIf="pars.name === 'Discharge at time of measurement'">
-								<td style="text-align: center;">{{pars.value}}</td>
+									<td style="text-align: center;">{{pars.value}}</td>
 								</ng-container>
 								<ng-container *ngIf="pars.name === 'Drainage area'">
-								<td>{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000000) }}</td>
+									<td>{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000000) }}</td>
 								</ng-container>
 								<ng-container *ngIf="pars.name === 'Cumulative Distance'">
-								<td style="text-align: center;">{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000).toUSGSvalue() }}</td>
+									<td style="text-align: center;">{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000).toUSGSvalue() }}</td>
 								</ng-container>
 							</ng-container>
-			
+
 							<ng-container>
 								<!-- if the key is equal to v - this is av speed, else it is vmax-->
-								<td style="text-align: center;">{{reach.result.equations.vmax.value}}</td>
-								<td title="{{reach.result.tracer_Response.leadingEdge.MostProbable.date}}">{{reach.result.tracer_Response.leadingEdge.MostProbable.cumTime}}</td>
-								<td style="text-align: center;" title="{{reach.result.tracer_Response.leadingEdge.MostProbable.date}}">{{reach.result.tracer_Response.peakConcentration.MostProbable.cumTime}}</td>
-								<td style="text-align: center;" title="{{reach.result.tracer_Response.leadingEdge.MostProbable.date}}">{{reach.result.tracer_Response.trailingEdge.MostProbable.cumTime}}</td>
-								<td style="text-align: center;">{{reach.result.tracer_Response.trailingEdge.MostProbable.concentration}}</td>
+								<td style="text-align: center;">{{reach.result.equations.v.value}}</td>
+								<td title="{{reach.result.tracer_Response.leadingEdge.MostProbable.date}}">{{toDecimals(reach.result.tracer_Response.leadingEdge.MostProbable.cumTime)}}</td>
+								<td style="text-align: center;" title="{{reach.result.tracer_Response.leadingEdge.MostProbable.date}}">{{toDecimals(reach.result.tracer_Response.peakConcentration.MostProbable.cumTime)}}</td>
+								<td style="text-align: center;" title="{{reach.result.tracer_Response.leadingEdge.MostProbable.date}}">{{toDecimals(reach.result.tracer_Response.trailingEdge.MostProbable.cumTime)}}</td>
+								<td style="text-align: center;">{{reach.result.tracer_Response.peakConcentration.MostProbable.concentration}}</td>
+							</ng-container>
+						</tr>
+					</table>
+				</div>
+				<div class="hidden">
+					<table id="UnitTable">
+						<tr>
+							<td>Discharge (Q):</td>
+							<td>{{ !StudyService.isMetric() ? 'cubic feet per second (cfs)' : 'cubic meters per second (cms)' }}</td>
+						</tr>
+						<tr>
+							<td>Drainage area (Da):</td>
+							<td>{{ !StudyService.isMetric() ? 'square miles (mi^2)' : 'square kilometers (km^2)' }}</td>
+						</tr>
+						<tr>
+							<td>Distance (L):</td>
+							<td>{{ !StudyService.isMetric() ? 'miles (mi)' : 'kilometers (km)' }}</td>
+						</tr>
+						<tr>
+							<td>Reach velocity (V):</td>
+							<td>{{ !StudyService.isMetric() ? 'feets per second (ft/s)' : 'meters per second (m/s)' }}</td>
+						</tr>
+						<tr>
+							<td>Time of leading edge (Tl):</td>
+							<td>hours</td>
+						</tr>
+						<tr>
+							<td>Time of peak concentration (Tp):</td>
+							<td>hours</td>
+						</tr>
+						<tr>
+							<td>Time of trailing edge at 10% peak concentration (Td10):</td>
+							<td>hours</td>
+						</tr>
+						<tr>
+							<td>Peak concentration (Ct)</td>
+							<td>milligrams per liter (mg/L)</td>
+						</tr>
+					</table>
+					<table id="MostProbTableDL">
+						<tr>
+							<th>Reach ID</th>
+							<th>Discharge</th>
+							<th>Drainage area</th>
+							<th>Distance</th>
+							<th>Reach Velocity</th>
+							<th>Time of Leading edge</th>
+							<th>Time of Peak concentration</th>
+							<th>Time of Trailing edge at 10% peak concentration</th>
+							<th>Peak concentration</th>
+						</tr>
+						<tr>
+							<th></th>
+							<th>Q</th>
+							<th>D<sub>a</sub></th>
+							<th>L</th>
+							<th>V</th>
+							<th>T<sub>l</sub></th>
+							<th>T<sub>p</sub></th>
+							<th>T<sub>d10</sub></th>
+							<th>C<sub>t</sub></th>
+						</tr>
+						<tr *ngFor="let reach of output$; let i = index">
+							<td>{{reach.name}}</td>
+							<ng-container *ngFor="let pars of reach.parameters">
+								<ng-container *ngIf="pars.name === 'Discharge at time of measurement'">
+									<td>{{pars.value}}</td>
+								</ng-container>
+								<ng-container *ngIf="pars.name === 'Drainage area'">
+									<td>{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000000) }}</td>
+								</ng-container>
+								<ng-container *ngIf="pars.name === 'Cumulative Distance'">
+									<td>{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000).toUSGSvalue() }}</td>
+								</ng-container>
+							</ng-container>
+
+							<ng-container>
+								<!-- if the key is equal to v - this is av speed, else it is vmax-->
+								<td>{{reach.result.equations.v.value}}</td>
+								<td>{{toDecimals(reach.result.tracer_Response.leadingEdge.MostProbable.cumTime)}}</td>
+								<td>{{toDecimals(reach.result.tracer_Response.peakConcentration.MostProbable.cumTime)}}</td>
+								<td>{{toDecimals(reach.result.tracer_Response.trailingEdge.MostProbable.cumTime)}}</td>
+								<td>{{reach.result.tracer_Response.peakConcentration.MostProbable.concentration}}</td>
 							</ng-container>
 						</tr>
 					</table>
@@ -109,16 +198,25 @@
 
 				<div class="table" id="scroll">
 				  	<h4>Maximum Probable</h4>
-				  	<table>
+				  	<table id="MaxProbTablePrint">
+						<tr>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th></th>
+							<th colspan="3" style="text-align:center;border-bottom: solid black 1px; padding: 4px 4px 4px 4px;">Time of</th>
+							<th></th>
+						</tr>
 						<tr style="border-bottom: solid black 1px; padding: 4px 4px 4px 4px;">
 							<th rowspan="2" vertical-align="center">Name</th>
 							<th title="{{ !StudyService.isMetric() ? 'cfs' : 'cms' }}">Discharge</th>
 							<th title="{{ !StudyService.isMetric() ? 'mi^2' : 'km^2' }}">Drainage area</th>
 							<th title="{{ !StudyService.isMetric() ? 'mi' : 'km' }}">Distance</th>
 							<th title="{{ !StudyService.isMetric() ? 'ft/s' : 'm/s' }}">Reach Velocity</th>
-							<th>Leading edge</th>
-							<th title="mg/L">Peak Concentration</th>
-							<th>Trailing edge at 10% peak concentration</th>
+							<th title="hours">Leading edge</th>
+							<th title="hours">Peak Concentration</th>
+							<th title="hours">Trailing edge at 10% peak concentration</th>
 							<th title="mg/L">Peak concentration</th>
 						</tr>
 						<tr style="border-bottom: solid black 1px; padding: 4px 4px 4px 4px; vertical-align: center; text-align: center;">
@@ -133,7 +231,7 @@
                         </tr>
 
 						<tr *ngFor="let reach of output$; let i = index">
-							<td>{{reach.name}}</td>		
+							<td>{{reach.name}}</td>
 							<ng-container *ngFor="let pars of reach.parameters">
 								<ng-container *ngIf="pars.name === 'Discharge at time of measurement'">
 									<td style="text-align: center;">{{pars.value}}</td>
@@ -144,25 +242,75 @@
 								<ng-container *ngIf="pars.name === 'Cumulative Distance'">
 									<td style="text-align: center;">{{pars.value}}</td>
 								</ng-container>
-								</ng-container>
+							</ng-container>
 
-								<ng-container>
+							<ng-container>
 								<!-- if the key is equal to v - this is av speed, else it is vmax-->
 								<td style="text-align: center;">{{reach.result.equations.vmax.value}}</td>
-								<td style="text-align: center;" title="{{reach.result.tracer_Response.leadingEdge.MaximumProbable.date}}">{{reach.result.tracer_Response.leadingEdge.MaximumProbable.cumTime}}</td>
-								<td style="text-align: center;" title="{{reach.result.tracer_Response.leadingEdge.MaximumProbable.date}}">{{reach.result.tracer_Response.peakConcentration.MaximumProbable.cumTime}}</td>                
-								<td style="text-align: center;" title="{{reach.result.tracer_Response.leadingEdge.MaximumProbable.date}}">{{reach.result.tracer_Response.trailingEdge.MaximumProbable.cumTime}}</td>
-								<td style="text-align: center;">{{reach.result.tracer_Response.trailingEdge.MaximumProbable.concentration}}</td>
+								<td style="text-align: center;" title="{{reach.result.tracer_Response.leadingEdge.MaximumProbable.date}}">{{toDecimals(reach.result.tracer_Response.leadingEdge.MaximumProbable.cumTime)}}</td>
+								<td style="text-align: center;" title="{{reach.result.tracer_Response.leadingEdge.MaximumProbable.date}}">{{toDecimals(reach.result.tracer_Response.peakConcentration.MaximumProbable.cumTime)}}</td>
+								<td style="text-align: center;" title="{{reach.result.tracer_Response.leadingEdge.MaximumProbable.date}}">{{toDecimals(reach.result.tracer_Response.trailingEdge.MaximumProbable.cumTime)}}</td>
+								<td style="text-align: center;">{{reach.result.tracer_Response.peakConcentration.MaximumProbable.concentration}}</td>
 							</ng-container>
 						</tr>
 				  	</table>
+				</div>
+				<div class="hidden">
+					<table id="MaxProbTableDL">
+						<tr>
+							<th>Name</th>
+							<th>Discharge</th>
+							<th>Drainage area</th>
+							<th>Distance</th>
+							<th>Reach Velocity</th>
+							<th>Leading edge</th>
+							<th>Peak Concentration</th>
+							<th>Trailing edge at 10% peak concentration</th>
+							<th>Peak concentration</th>
+						</tr>
+						<tr>
+							<th></th>
+							<th>Q</th>
+							<th>D<sub>a</sub></th>
+							<th>L</th>
+							<th>V</th>
+							<th>T<sub>l</sub></th>
+							<th>T<sub>p</sub></th>
+							<th>T<sub>d10</sub></th>
+							<th>C<sub>t</sub></th>
+						</tr>
+
+						<tr *ngFor="let reach of output$; let i = index">
+							<td>{{reach.name}}</td>
+							<ng-container *ngFor="let pars of reach.parameters">
+								<ng-container *ngIf="pars.name === 'Discharge at time of measurement'">
+									<td>{{pars.value}}</td>
+								</ng-container>
+								<ng-container *ngIf="pars.name === 'Drainage area'">
+									<td>{{pars.value}}</td>
+								</ng-container>
+								<ng-container *ngIf="pars.name === 'Cumulative Distance'">
+									<td>{{pars.value}}</td>
+								</ng-container>
+							</ng-container>
+
+							<ng-container>
+								<!-- if the key is equal to v - this is av speed, else it is vmax-->
+								<td>{{reach.result.equations.vmax.value}}</td>
+								<td>{{toDecimals(reach.result.tracer_Response.leadingEdge.MaximumProbable.cumTime)}}</td>
+								<td>{{toDecimals(reach.result.tracer_Response.peakConcentration.MaximumProbable.cumTime)}}</td>
+								<td>{{toDecimals(reach.result.tracer_Response.trailingEdge.MaximumProbable.cumTime)}}</td>
+								<td>{{reach.result.tracer_Response.peakConcentration.MaximumProbable.concentration}}</td>
+							</ng-container>
+						</tr>
+					</table>
 				</div>
 			</div>
 
 
 			<!-- Graph -->
 			<div *ngIf="StudyService.ReportOptions[2].checked">
-				<p class="center">Graph Goes Here</p>
+				<tot-appcharts></tot-appcharts>
 			</div>
 
 
@@ -174,50 +322,53 @@
 				</a>
 				<div class="space10"></div>
 				<p class="disclaimer">
-					USGS Data Disclaimer: Unless otherwise stated, all data, metadata and related materials are considered to satisfy the quality standards relative to the purpose for which the data were collected. 
+					USGS Data Disclaimer: Unless otherwise stated, all data, metadata and related materials are considered to satisfy the quality standards relative to the purpose for which the data were collected.
 				  Although these data and associated metadata have been reviewed for accuracy and completeness and approved for release by the U.S. Geological Survey (USGS), no warranty expressed or implied is made regarding the display or utility of the data for other purposes, nor on all computer systems, nor shall the act of distribution constitute any such warranty.
 				</p>
 				<p class="disclaimer">
-					USGS Software Disclaimer: This software has been approved for release by the U.S. Geological Survey (USGS). Although the software has been subjected to rigorous review, the USGS reserves the right to update the software as needed pursuant to further analysis and review. 
+					USGS Software Disclaimer: This software has been approved for release by the U.S. Geological Survey (USGS). Although the software has been subjected to rigorous review, the USGS reserves the right to update the software as needed pursuant to further analysis and review.
 				  No warranty, expressed or implied, is made by the USGS or the U.S. Government as to the functionality of the software and related material nor shall the fact of release constitute any such warranty. Furthermore, the software is released on condition that neither the USGS nor the U.S. Government shall be held liable for any damages resulting from its authorized or unauthorized use.
 				</p>
 				<p class="disclaimer">
 					USGS Product Names Disclaimer: Any use of trade, firm, or product names is for descriptive purposes only and does not imply endorsement by the U.S. Government.
 				</p>
 			</div>
-
-
-
-
 		</div>
 		<!-- Footer -->
 		<div class="modal-buttons space-around">
 
 			<!-- Close Modal -->
-			<button class="icon-button white" (click)="activeModal.dismiss()">
+			<button class="icon-button white" (click)="closeModal(); activeModal.dismiss()">
 				<i class="far fa-times"></i>
 				<span>Close</span>
 			</button>
 
-			<!-- 
+			<!--
 				Empty span makes print and download buttons float right
 				Because of flex space-between
 			-->
 			<span>
-				<!-- Download -->
-				<button class="icon-button" (click)="download()">
-					<i class="far fa-download"></i>
-					<span>Download</span>
-				</button>
 
-				<!--<button class="btn-blue btn-main" printSectionId="print-content" ngxPrint><i class="fa fa-print"></i>&nbsp;&nbsp;Print</button>-->
+				<div class="row">
+					<!-- Download -->
+					<div class="col text-right">
+					  <div ngbDropdown placement="top-right" class="d-inline-block">
+						<button class="btn btn-outline-primary" id="dropdownBasic2" ngbDropdownToggle>Download</button>
+						<div ngbDropdownMenu aria-labelledby="dropdownBasic2">
+						  <button ngbDropdownItem (click)="downloadGeoJSON()">GeoJSON</button>
+						  <button ngbDropdownItem (click)="downloadCSV()">CSV</button>
+						</div>
+					  </div>
+					</div>
 
-				<button class="icon-button blue" (click)="onPrint()">
-					<i class="far fa-print"></i>
-					<span>Print</span>
-				</button>  
+					<!--Print-->
+					<button class="icon-button blue" (click)="onPrint()">
+						<i class="far fa-print"></i>
+						<span>Print</span>
+					</button>
+				</div>
 			</span>
-			        
+
 		</div>
 	</div>
 </div>

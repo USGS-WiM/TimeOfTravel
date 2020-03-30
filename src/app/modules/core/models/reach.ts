@@ -19,9 +19,9 @@ export class reach {
     
 
     private _init (paramlist: Array<any>) { //paramlist should be one from the reference class ? how to bring it here ?
-        for (var i = 0; i < paramlist.length; i ++){
+        for (let i = 0; i < paramlist.length; i ++){
             let newparam = {};
-            for (var  mykey in paramlist[i] ){ //deep copy constructor
+            for (let  mykey in paramlist[i] ){ //deep copy constructor
                 newparam[mykey] = paramlist[i][mykey]; // parameters[key 1][val 1] (key1: val1) //{units: }
             }
 

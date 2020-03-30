@@ -23,7 +23,8 @@
               "./node_modules/usgs-search-api/dist/search_api.css",
               "./node_modules/leaflet/dist/leaflet.css",
 			  "./node_modules/ngx-toastr/toastr.css",
-			  "./src/global.scss"
+        "./src/global.scss",
+        "./node_modules/bootstrap/dist/css/bootstrap.min.css"
             ],
             "scripts": [
               "./node_modules/jquery/dist/jquery.min.js",

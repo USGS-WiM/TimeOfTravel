@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of} from 'rxjs';
+import { Observable, of, BehaviorSubject} from 'rxjs';
 import {catchError} from 'rxjs/operators';
 import { ToastrService, IndividualConfig } from 'ngx-toastr';
 import * as messageType from '../../../shared/messageType'
@@ -9,6 +9,7 @@ import * as messageType from '../../../shared/messageType'
 export class NavigationService {
   public get baseURL() {return "https://test.streamstats.usgs.gov/NavigationServices";}
   private messager: ToastrService;
+  public navigationGeoJSON$: BehaviorSubject<L.GeoJSON> = new BehaviorSubject<L.GeoJSON>(undefined);
 
   constructor(private http: HttpClient,toastr: ToastrService) {
     this.messager = toastr;

@@ -91,6 +91,11 @@
         "weight": 3,
         "opacity": 1
       },
+      "Polyline_upstream": {
+        "color": "green",
+        "weight": 3,
+        "opacity": 1
+      },
       "Polyline_unorder": {
         "color": "red",
         "weight": 3,

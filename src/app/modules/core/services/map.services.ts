@@ -2,7 +2,7 @@ import { Injectable, ElementRef, EventEmitter, Injector } from '@angular/core';
 import * as L from 'leaflet';
 import * as esri from 'esri-leaflet';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, Subject } from 'rxjs';
+import { Observable, of, Subject, BehaviorSubject } from 'rxjs';
 import { MapLayer } from '../models/maplayer';
 
 
@@ -16,7 +16,7 @@ export class MapService {
 
   public Options: L.MapOptions;
   // for layers that will show up in the leaflet control
-  public LayersControl: Subject<layerControl> = new Subject<any>();
+  public LayersControl: BehaviorSubject<layerControl> = new BehaviorSubject<any>({ baseLayers: [], overlays: [] });
 
   public _layersControl: layerControl = {
     baseLayers: [], overlays: []
@@ -26,11 +26,15 @@ export class MapService {
   public isClickable: boolean = false;
   public Cursor: String;
   public markerOptions;
-  public fitBounds: Subject<any> = new Subject<any>();
+  public fitBounds: BehaviorSubject<any> = new BehaviorSubject<any>(undefined);
   public _bound;
   public unitsOptions;
   public abbrevOptions;
   public http: HttpClient;
+
+  public layerGroup: BehaviorSubject<L.FeatureGroup> = new BehaviorSubject<L.FeatureGroup>(undefined);
+  public reportlayerGroup: BehaviorSubject<L.FeatureGroup> = new BehaviorSubject<L.FeatureGroup>(undefined);
+  public bounds: BehaviorSubject<any> = new BehaviorSubject<any>(undefined);
 
   constructor(http: HttpClient) {
 
@@ -80,31 +84,6 @@ export class MapService {
 
     //Notify subscribers
     this.LayersControl.next(this._layersControl);
-  }
-
-
-  public onZoomChangeCircle(layername: string, zoom: number) {
-    var ml = this._layersControl.overlays.find((l: any) => (l.name === layername))
-    if (!ml) return;
-    if (!ml.visible) { ml.visible = true; }
-    ml.layer.eachLayer(o => {
-      if (o.options.radius > 10) {
-        if (zoom > 13) {
-          //o.setStyle({
-            //radius: 20, color: "green",
-            //fillColor: "red",
-            //fillOpacity: 1
-          //})
-        } else {
-          //o.setStyle({
-            //radius: 50, color: "yellow",
-            //fillColor: "orange",
-            //fillOpacity: 0.5
-          //})
-        }
-      } else {
-      }
-    })
   }
 
 
@@ -182,6 +161,7 @@ export class MapService {
 
   public setBounds(loc) {
     this._bound = loc;
+    this.bounds.next(loc);
     this.fitBounds.next(this._bound);
   }
 
@@ -231,7 +211,7 @@ export class MapService {
   }
 
   public latlng: L.LatLng;
-  private LatLng = new Subject<L.LatLng>();
+  public LatLng = new BehaviorSubject<L.LatLng>(undefined);
   Poi$ = this.LatLng.asObservable();
   SetPoi(latlng: L.LatLng) {
     this.latlng = latlng;

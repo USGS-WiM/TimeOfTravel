@@ -1,5 +1,5 @@
 import { Component, OnInit} from '@angular/core';
-import { NgbModal,NgbActiveModal,NgbModalConfig } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbActiveModal, NgbModalConfig } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
   selector: 'aboutModal',
@@ -7,18 +7,16 @@ import { NgbModal,NgbActiveModal,NgbModalConfig } from '@ng-bootstrap/ng-bootstr
   styleUrls: ['./about.component.scss']
 })
 
-export class AboutModalComponent implements OnInit {   
+export class AboutModalComponent implements OnInit {
 
     public appVersion: string;
 
-    constructor(config: NgbModalConfig, public activeModal: NgbActiveModal){
-        // customize default values of modals used by this component tree
-        config.backdrop = 'static';
-        config.keyboard = false;
+    constructor(config: NgbModalConfig, public activeModal: NgbActiveModal) {
+      // customize default values of modals used by this component tree
+      config.backdrop = 'static';
+      config.keyboard = false;
+    }
 
-     }
-     ngOnInit(){
+     ngOnInit() {}
 
-     }
-   
 }
