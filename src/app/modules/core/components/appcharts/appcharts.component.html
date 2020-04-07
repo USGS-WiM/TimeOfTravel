@@ -1,8 +1,5 @@
 <div class="most-max-probable-toggle">
-	<button class="blue" (click)="open()">{{buttonName}}</button>
-</div>
-
-<ng-select #selectGroup [items]="reachesGrouped"
+	<ng-select #selectGroup [items]="reachesGrouped"
 						[disabled]="isDisabled"
 						[virtualScroll]="true"
 						bindLabel="label"
@@ -10,7 +7,13 @@
 						(change)="chartIsActive($event)"
 					placeholder="Selected group"
 					[(ngModel)]="selectedGroupId">
-</ng-select>
+	</ng-select>
+	
+	<!-- Toggle max/min probable -->
+	<button class="blue" (click)="open()">{{buttonName}}</button>
+</div>
+
+
 
 <div style="display: block;" *ngIf="mostLineChartData.length > 1 && showMost">
 	<canvas baseChart width="600" height="400"

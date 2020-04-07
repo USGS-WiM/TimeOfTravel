@@ -7,6 +7,7 @@
 // Import font
 @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,700&display=swap');
 @import url('https://fonts.googleapis.com/css?family=PT+Sans:400,700&display=swap');
+@import url('app/global_styles/tables.scss');
 
 $sans: 'Source Sans Pro', sans-serif;
 // Variables
@@ -34,6 +35,10 @@ app-root{
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
+}
+
+.center{
+	text-align: center;
 }
 
 // Initial loader that shows before angular
@@ -887,6 +892,54 @@ ul{
 			padding-left: 5px;
 			text-transform: capitalize;
 		}
+	}
+
+}
+
+
+
+// Table Styling
+table.basic {
+	background-color: #FFFFFF;
+	text-align: left;
+	border-collapse: collapse;
+	width: 100%;
+	table-layout: fixed;
+	overflow-wrap: break-word;
+
+	// td and th
+	td, th {
+		border: 1px solid #AAAAAA;
+		padding: 3px 0px;
+	}
+
+	// Header rows
+	thead {
+		background-color: #DEE2EC;
+
+		th {
+			font-size: 11px;
+			font-weight: bold;
+			text-align: center;
+			line-height: 11.5px;
+			padding: 4px;
+			vertical-align: bottom;
+		}
+	}
+
+	// Body blocks
+	tbody{
+		td {
+			font-size: 13px;
+			padding: 2px;
+		}
+		tr:nth-child(even) {
+			background: #EEF4FF;
+		}
+		tr:hover {
+			background-color: #B2B8D2;
+		}
+
 	}
 
 }

@@ -6,174 +6,172 @@
 
 <div *ngIf="reachesReady" class="modal-wrapper">
 	<div class="modal-box">		
-		<div>
-			<!-- Header -->
-			<div class="modal-top">
-				<div class="title">Jobsons Results</div>
-				<div class="close-modal" (click)="activeModal.dismiss()">
-					<i class="far fa-times"></i>
-				</div>
+		<!-- Header -->
+		<div class="modal-top">
+			<div class="title">Jobsons Results</div>
+			<div class="close-modal" (click)="activeModal.dismiss()">
+				<i class="far fa-times"></i>
 			</div>
-			<!-- Main content -->
-			<div class="modal-middle">
-		
-				<form #myForm="ngForm">
-					
-					<!-- Time of Spill -->
-					<div class="modal-form-row">
-						<label>
-							Time of Spill:
-						</label>
-						<div class="row-input ri-flex">
-							<app-date-time-picker [(ngModel)]="dateModel" name="activeEndDate"></app-date-time-picker>
-						</div>
-					</div>
-					<!-- Spill Mass -->
-					<div class="modal-form-row">
-						<label>
-							Spill Mass
-							<small>({{this.StudyService.defConcentration}}):</small>
-						</label>
-						<div class="row-input">
-							<input [(ngModel)]="SpillMass" (ngModelChange)="setConc($event)" type=number required placeholder="Value" name="spillmass" class="up">
-						</div>
-					</div>
-					<!-- Discharge -->
-					<div class="modal-form-row">
-						<label>
-							Discharge
-							<small>({{this.StudyService.defDischarge}}):</small>
-						</label>
-						<div class="row-input">
-							<input [(ngModel)]="Discharge" (ngModelChange)="setDischarge($event)" type=number required placeholder="Select a gage from the map or enter a value" name="discharge" class="form-control tight">
-						</div>
-					</div>
-
-
-					<div>
-						<label>
-							Mean annual flow of closest reach: {{FirstReachDischarge}}
-						</label>
-					</div>
-
-					<!-- Add space between inputs and reaches -->
-					<div class="space20"></div>
-
-
-					<!-- Reaches -->
-					<div class="toggle-header" (click)="showReaches = !showReaches">
-						<div class="text">Reaches</div>
-						<div class="icon">
-							<i class="far" [ngClass]="showReaches ? 'fa-minus-circle' : 'fa-plus-circle'"></i>
-						</div>
-					</div>
-					<!-- Map Layers Body -->
-					<div class="toggle-block remove-bottom-border jobsons-toggles" [ngClass]="{'visible-extend': showReaches}">
+		</div>
+		<!-- Main content -->
+		<div class="modal-middle">
+	
+			<form #myForm="ngForm">
 				
-						<div class="toggle-block-body">
+				<!-- Time of Spill -->
+				<div class="modal-form-row">
+					<label>
+						Time of Spill:
+					</label>
+					<div class="row-input ri-flex">
+						<app-date-time-picker [(ngModel)]="dateModel" name="activeEndDate"></app-date-time-picker>
+					</div>
+				</div>
+				<!-- Spill Mass -->
+				<div class="modal-form-row">
+					<label>
+						Spill Mass
+						<small>({{this.StudyService.defConcentration}}):</small>
+					</label>
+					<div class="row-input">
+						<input [(ngModel)]="SpillMass" (ngModelChange)="setConc($event)" type=number required placeholder="Value" name="spillmass" class="up">
+					</div>
+				</div>
+				<!-- Discharge -->
+				<div class="modal-form-row">
+					<label>
+						Discharge
+						<small>({{this.StudyService.defDischarge}}):</small>
+					</label>
+					<div class="row-input">
+						<input [(ngModel)]="Discharge" (ngModelChange)="setDischarge($event)" type=number required placeholder="Select a gage from the map or enter a value" name="discharge" class="form-control tight">
+					</div>
+				</div>
+
+
+				<div>
+					<label>
+						Mean annual flow of closest reach: {{FirstReachDischarge}}
+					</label>
+				</div>
+
+				<!-- Add space between inputs and reaches -->
+				<div class="space20"></div>
+
+
+				<!-- Reaches -->
+				<div class="toggle-header" (click)="showReaches = !showReaches">
+					<div class="text">Reaches</div>
+					<div class="icon">
+						<i class="far" [ngClass]="showReaches ? 'fa-minus-circle' : 'fa-plus-circle'"></i>
+					</div>
+				</div>
+				<!-- Map Layers Body -->
+				<div class="toggle-block remove-bottom-border jobsons-toggles" [ngClass]="{'visible-extend': showReaches}">
+			
+					<div class="toggle-block-body">
+						
+						
+						<div *ngFor="let item of reachList; let i = index; trackBy:identify" id="{{i}}">
 							
 							
-							<div *ngFor="let item of reachList; let i = index; trackBy:identify" id="{{i}}">
-								
-								
-								<!-- Nested -toggles -->
-								<div class="toggle-header nested" (click)="openCloseItem(i)">
-									<div class="text">
-										<span>
-											{{item.name}} <i [ngClass]="!item.parameters.show ? 'far fa-chevron-down' : 'far fa-chevron-up'"></i>
-										</span> 
-									</div>
-									<div class="icon jobsons-delete" (click)="removeReach(i)">
-										<i class="far" class="far fa-trash-alt"></i>
+							<!-- Nested -toggles -->
+							<div class="toggle-header nested" (click)="openCloseItem(i)">
+								<div class="text">
+									<span>
+										{{item.name}} <i [ngClass]="!item.parameters.show ? 'far fa-chevron-down' : 'far fa-chevron-up'"></i>
+									</span> 
+								</div>
+								<div class="icon jobsons-delete" (click)="removeReach(i)">
+									<i class="far" class="far fa-trash-alt"></i>
+								</div>
+							</div>
+
+							<!-- Nested toggle body -->
+							<div class="toggle-block" [ngClass]="{'visible': item.parameters.show}">
+
+								<!--Name input-->
+								<div *ngFor="let k of item | keyvalue;  let it1 = index; trackBy:customTrackBy">
+									<div class="modal-form-row" *ngIf="k.key === 'name'">
+										<label>
+											{{getLabel(k.key)}}
+										</label>
+										<div class="row-input">
+											<input [(ngModel)]="k.value" placeholder="Name" name="{{k.value}}" type="text" ngControl="value" ngMaxlength="25" autocomplete="off">
+										</div>
 									</div>
 								</div>
 
-								<!-- Nested toggle body -->
-								<div class="toggle-block" [ngClass]="{'visible': item.parameters.show}">
-
-									<!--Name input-->
-									<div *ngFor="let k of item | keyvalue;  let it1 = index; trackBy:customTrackBy">
-										<div class="modal-form-row" *ngIf="k.key === 'name'">
-											<label>
-												{{getLabel(k.key)}}
-											</label>
-											<div class="row-input">
-												<input [(ngModel)]="k.value" placeholder="Name" name="{{k.value}}" type="text" ngControl="value" ngMaxlength="25" autocomplete="off">
-											</div>
-										</div>
-									</div>
-
-									<!--Description input-->
-									<div *ngFor="let k of item | keyvalue;  let it2 = index; trackBy:customTrackBy">
-										<div class="modal-form-row" *ngIf="k.key === 'description'">
-											<label>
-												{{getLabel(k.key)}}
-											</label>
-											<div class="row-input">
-												<input [(ngModel)]="k.value" placeholder="value" name="{{k.value}}" type="text" ngControl="value" ngMaxlength="50" autocomplete="off">
-											</div>
-										</div>
-									</div>
-								
-									<!--Parameters input-->
-									<div *ngFor="let pars of item.parameters;  let it3 = index; trackBy:customTrackBy" class="modal-form-row">
+								<!--Description input-->
+								<div *ngFor="let k of item | keyvalue;  let it2 = index; trackBy:customTrackBy">
+									<div class="modal-form-row" *ngIf="k.key === 'description'">
 										<label>
-											{{pars.name}}
-											<small>({{pars.unit.unit}}):</small>
+											{{getLabel(k.key)}}
 										</label>
-
-										<div *ngIf="i === currentStep; else disable" class="row-input">
-
-											<span *ngIf="pars.required === true">
-												<input [(ngModel)]="item.parameters[it3].value" placeholder="value" name="{{pars.name}}"
-															type=number ngControl="value" required autocomplete="off">
-											</span>
-
-											<span *ngIf="pars.required === false">
-												<input [(ngModel)]='item.parameters[it3].value' placeholder="value" name="{{pars.name}}"
-															type=number ngControl="value" autocomplete="off">
-											</span>
+										<div class="row-input">
+											<input [(ngModel)]="k.value" placeholder="value" name="{{k.value}}" type="text" ngControl="value" ngMaxlength="50" autocomplete="off">
 										</div>
+									</div>
+								</div>
+							
+								<!--Parameters input-->
+								<div *ngFor="let pars of item.parameters;  let it3 = index; trackBy:customTrackBy" class="modal-form-row">
+									<label>
+										{{pars.name}}
+										<small>({{pars.unit.unit}}):</small>
+									</label>
 
-										<ng-template #disable>
-											<span *ngIf="pars.required === true">
-												<input [value]='item.parameters[it3].value' placeholder="value" name="{{pars.name}}"
-															type=number ngControl="value" required autocomplete="off">
-											</span>
+									<div *ngIf="i === currentStep; else disable" class="row-input">
 
-											<span *ngIf="pars.required === false">
-												<input [value]='item.parameters[it3].value' placeholder="value" name="{{pars.name}}"
-															type=number ngControl="value" autocomplete="off">
-											</span>
-										</ng-template>
+										<span *ngIf="pars.required === true">
+											<input [(ngModel)]="item.parameters[it3].value" placeholder="value" name="{{pars.name}}"
+														type=number ngControl="value" required autocomplete="off">
+										</span>
 
+										<span *ngIf="pars.required === false">
+											<input [(ngModel)]='item.parameters[it3].value' placeholder="value" name="{{pars.name}}"
+														type=number ngControl="value" autocomplete="off">
+										</span>
 									</div>
 
+									<ng-template #disable>
+										<span *ngIf="pars.required === true">
+											<input [value]='item.parameters[it3].value' placeholder="value" name="{{pars.name}}"
+														type=number ngControl="value" required autocomplete="off">
+										</span>
 
-								</div> <!-- End Nested toggle body-->
-	
-							</div>
-						</div> <!-- End toggle block body -->
-					</div>
+										<span *ngIf="pars.required === false">
+											<input [value]='item.parameters[it3].value' placeholder="value" name="{{pars.name}}"
+														type=number ngControl="value" autocomplete="off">
+										</span>
+									</ng-template>
+
+								</div>
 
 
-			
-				</form>
+							</div> <!-- End Nested toggle body-->
+
+						</div>
+					</div> <!-- End toggle block body -->
+				</div>
+
+
+		
+			</form>
 
 
 
-			</div>
-			<!-- Footer -->
-			<div class="modal-buttons space-around">
-				<button *ngIf="mylist !== null" class="icon-button white" (click)="onClick_clear()">
-					<i class="far fa-trash-alt"></i>
-					<span>Clear</span>
-				</button>
-				<button [disabled]="!myForm.form.valid" class="icon-button blue" (click)="getResults()">
-					<i [ngClass]="gettingResults ? 'far fa-sync fa-spin' : 'fas fa-long-arrow-right'"></i>
-					<span>{{ gettingResults ? 'Calculating' : 'Get Results' }}</span>
-				</button>
-			</div>
+		</div>
+		<!-- Footer -->
+		<div class="modal-buttons space-around">
+			<button *ngIf="mylist !== null" class="icon-button white" (click)="onClick_clear()">
+				<i class="far fa-trash-alt"></i>
+				<span>Clear</span>
+			</button>
+			<button [disabled]="!myForm.form.valid" class="icon-button blue" (click)="getResults()">
+				<i [ngClass]="gettingResults ? 'far fa-sync fa-spin' : 'fas fa-long-arrow-right'"></i>
+				<span>{{ gettingResults ? 'Calculating' : 'Get Results' }}</span>
+			</button>
 		</div>
 	</div>
 </div>

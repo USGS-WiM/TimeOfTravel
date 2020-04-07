@@ -1,5 +1,5 @@
 <div class="footer-wrapper" *ngIf="showResult$ === true">
-		<div>
+		<div class="footer-header">
 			<h3> {{spillMass}} kg Spill Occuring {{spillDate}}</h3>
 		</div>
 
@@ -9,10 +9,10 @@
 
 				<!-- Most Probable Table -->
 				<div class="data-display" *ngIf = "showMost">
-					<h2>Most Probable</h2>
+					<div class="data-display-title">Most Probable</div>
 
 					<div class="table-display">
-						<table class="table table-hover" width="400">
+						<table class="basic" width="400">
 							<thead>
 								<tr>
 									<th></th>
@@ -20,10 +20,10 @@
 									<th></th>
 									<th></th>
 									<th></th>
-									<th colspan="3" style="text-align:center;border-bottom: solid black 1px; padding: 4px 4px 4px 4px;">Time of</th>
+									<th colspan="3" class="center">Time of</th>
 									<th></th>
 								</tr>
-								<tr style="border-bottom: solid black 1px; padding: 4px 4px 4px 4px;">
+								<tr>
 									<th rowspan="2" vertical-align="center">Reach ID</th>
 									<th title="{{ !StudyService.isMetric() ? 'cfs' : 'cms' }}">Discharge</th>
 									<th title="{{ !StudyService.isMetric() ? 'mi^2' : 'km^2' }}">Drainage area</th>
@@ -34,7 +34,7 @@
 									<th title="hours">Trailing edge at 10% peak concentration</th>
 									<th title="mg/L">Peak concentration</th>
 								</tr>
-								<tr style="border-bottom: solid black 1px; padding: 4px 4px 4px 4px; vertical-align: center; text-align: center;">
+								<tr>
 									<th>Q</th>
 									<th>D<sub>a</sub></th>
 									<th>L</th>
@@ -52,23 +52,23 @@
 
 									<ng-container *ngFor="let pars of reach.parameters">
 										<ng-container *ngIf="pars.name === 'Discharge at time of measurement'">
-											<td style="text-align: center;">{{pars.value}}</td>
+											<td class="center">{{pars.value}}</td>
 										</ng-container>
 										<ng-container *ngIf="pars.name === 'Drainage area'">
 											<td>{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000000) }}</td>
 										</ng-container>
 										<ng-container *ngIf="pars.name === 'Cumulative Distance'">
-											<td style="text-align: center;">{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000).toUSGSvalue() }}</td>
+											<td class="center">{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000).toUSGSvalue() }}</td>
 										</ng-container>
 									</ng-container>
 
 									<ng-container>
 										<!-- if the key is equal to v - this is av speed, else it is vmax-->
-										<td style="text-align: center;">{{reach.result.equations.v.value}}</td>
+										<td class="center">{{reach.result.equations.v.value}}</td>
 										<td>{{toDecimals(reach.result.tracer_Response.leadingEdge.MostProbable.cumTime)}}</td>
 										<td>{{toDecimals(reach.result.tracer_Response.peakConcentration.MostProbable.cumTime)}}</td>
 										<td>{{toDecimals(reach.result.tracer_Response.trailingEdge.MostProbable.cumTime)}}</td>
-										<td style="text-align: center;">{{reach.result.tracer_Response.peakConcentration.MostProbable.concentration}}</td>
+										<td class="center">{{reach.result.tracer_Response.peakConcentration.MostProbable.concentration}}</td>
 									</ng-container>
 								</tr>
 							</tbody>
@@ -78,9 +78,9 @@
 
 				<!-- Max Probable -->
 				<div class="data-display" *ngIf = "showMax">
-					<h2>Maximum Probable</h2>
+					<div class="data-display-title">Maximum Probable</div>
 					<div class="table-display">
-						<table class="table table-hover" width="400">
+						<table class="basic" width="400">
 							<thead>
 								<tr>
 									<th></th>
@@ -88,10 +88,10 @@
 									<th></th>
 									<th></th>
 									<th></th>
-									<th colspan="3" style="text-align:center;border-bottom: solid black 1px; padding: 4px 4px 4px 4px;">Time of</th>
+									<th colspan="3" class="center">Time of</th>
 									<th></th>
 								</tr>
-								<tr style="border-bottom: solid black 1px; padding: 4px 4px 4px 4px;">
+								<tr>
 									<th rowspan="2" vertical-align="center">Reach ID</th>
 									<th title="{{ !StudyService.isMetric() ? 'cfs' : 'cms' }}">Discharge</th>
 									<th title="{{ !StudyService.isMetric() ? 'mi^2' : 'km^2' }}">Drainage area</th>
@@ -102,7 +102,7 @@
 									<th title="hours">Trailing edge at 10% peak concentration</th>
 									<th title="mg/L">Peak concentration</th>
 								</tr>
-								<tr style="border-bottom: solid black 1px; padding: 4px 4px 4px 4px; vertical-align: center; text-align: center;">
+								<tr class="center">
 									<th>Q</th>
 									<th>D<sub>a</sub></th>
 									<th>L</th>
@@ -119,22 +119,22 @@
 									<td>{{reach.name}}</td>
 									<ng-container *ngFor="let pars of reach.parameters">
 										<ng-container *ngIf="pars.name === 'Discharge at time of measurement'">
-											<td style="text-align: center;">{{pars.value}}</td>
+											<td class="center">{{pars.value}}</td>
 										</ng-container>
 										<ng-container *ngIf="pars.name === 'Drainage area'">
 											<td>{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000000) }}</td>
 										</ng-container>
 										<ng-container *ngIf="pars.name === 'Cumulative Distance'">
-											<td style="text-align: center;">{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000).toUSGSvalue() }}</td>
+											<td class="center">{{ !StudyService.isMetric() ? pars.value : (pars.value / 1000).toUSGSvalue() }}</td>
 										</ng-container>
 									</ng-container>
 									<ng-container>
 										<!-- if the key is equal to v - this is av speed, else it is vmax-->
-										<td style="text-align: center;">{{reach.result.equations.vmax.value}}</td>
+										<td class="center">{{reach.result.equations.vmax.value}}</td>
 										<td>{{toDecimals(reach.result.tracer_Response.leadingEdge.MaximumProbable.cumTime)}}</td>
 										<td>{{toDecimals(reach.result.tracer_Response.peakConcentration.MaximumProbable.cumTime)}}</td>
 										<td>{{toDecimals(reach.result.tracer_Response.trailingEdge.MaximumProbable.cumTime)}}</td>
-										<td style="text-align: center;">{{reach.result.tracer_Response.peakConcentration.MaximumProbable.concentration}}</td>
+										<td class="center">{{reach.result.tracer_Response.peakConcentration.MaximumProbable.concentration}}</td>
 									</ng-container>
 								</tr>
 							</tbody>

@@ -111,7 +111,13 @@
 			
 			button{
 				margin: 0 5px;
-				padding: 0px 10px
+				padding: 0px 10px;
+				border-radius: 4px;
+				font-size: 13px;
+
+				i{
+					margin-right: 4px;
+				}
 			}
 		}
 	}

@@ -1,8 +1,21 @@
 .most-max-probable-toggle{
-	display: block;
+	display: flex;
 	width: 100%;
-	text-align: center;
-	padding-bottom: 15px;
+	padding-bottom: 10px;
+	justify-content: space-between;
+
+	.ng-select{
+		flex-grow:3;
+		max-width: 200px;
+	}
+
+	button{
+		font-size: 12px;
+		height: 30px;
+		border-radius: 4px;
+		margin-right: 10px;
+		margin-top: 6px;
+	}
 }
 
 ng-select {
