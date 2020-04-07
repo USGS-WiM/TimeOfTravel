@@ -11,6 +11,7 @@
 			<div class="title">Jobsons Results</div>
 			<div class="close-modal" (click)="activeModal.dismiss()">
 				<i class="far fa-times"></i>
+				{{updateDischarge()}}
 			</div>
 		</div>
 		<!-- Main content -->
@@ -34,7 +35,7 @@
 						<small>({{this.StudyService.defConcentration}}):</small>
 					</label>
 					<div class="row-input">
-						<input [(ngModel)]="SpillMass" (ngModelChange)="setConc($event)" type=number required placeholder="Value" name="spillmass" class="up">
+						<input [(ngModel)]="SpillMass" (ngModelChange)="setConc($event);validateInputs();" type=number required placeholder="Value" name="spillmass" class="up">
 					</div>
 				</div>
 				<!-- Discharge -->
@@ -44,7 +45,7 @@
 						<small>({{this.StudyService.defDischarge}}):</small>
 					</label>
 					<div class="row-input">
-						<input [(ngModel)]="Discharge" (ngModelChange)="setDischarge($event)" type=number required placeholder="Select a gage from the map or enter a value" name="discharge" class="form-control tight">
+						<input [(ngModel)]="discharge" (ngModelChange)="validateInputs();" type=number required placeholder="Select a gage from the map or enter a value" name="discharge" class="form-control tight">
 					</div>
 				</div>
 
@@ -161,20 +162,20 @@
 
 
 
-		</div>
-		<!-- Footer -->
-		<div class="modal-buttons space-around">
-			<button *ngIf="mylist !== null" class="icon-button white" (click)="onClick_clear()">
-				<i class="far fa-trash-alt"></i>
-				<span>Clear</span>
-			</button>
-			<button [disabled]="!myForm.form.valid" class="icon-button blue" (click)="getResults()">
-				<i [ngClass]="gettingResults ? 'far fa-sync fa-spin' : 'fas fa-long-arrow-right'"></i>
-				<span>{{ gettingResults ? 'Calculating' : 'Get Results' }}</span>
-			</button>
+			</div>
+			<!-- Footer -->
+			<div class="modal-buttons space-around">
+				<button *ngIf="mylist !== null" class="icon-button white" (click)="onClick_clear()">
+					<i class="far fa-trash-alt"></i>
+					<span>Clear</span>
+				</button>
+				<button [disabled]="validateInputs()" class="icon-button blue" (click)="setDischarge(); getResults();">
+					<i [ngClass]="gettingResults ? 'far fa-sync fa-spin' : 'fas fa-long-arrow-right'"></i>
+					<span>{{ gettingResults ? 'Calculating' : 'Get Results' }}</span>
+				</button>
+			</div>
 		</div>
 	</div>
-</div>
 
 
       

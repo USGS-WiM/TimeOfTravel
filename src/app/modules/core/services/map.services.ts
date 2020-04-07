@@ -31,6 +31,7 @@ export class MapService {
   public unitsOptions;
   public abbrevOptions;
   public http: HttpClient;
+  public map: L.Map;
 
   public layerGroup: BehaviorSubject<L.FeatureGroup> = new BehaviorSubject<L.FeatureGroup>(undefined);
   public reportlayerGroup: BehaviorSubject<L.FeatureGroup> = new BehaviorSubject<L.FeatureGroup>(undefined);
@@ -100,7 +101,11 @@ export class MapService {
       } else {
         var nhdplusid = Object.values(o._layers)[0]["feature"].properties.nhdplus_comid;
         if (Number(indx) == Number(nhdplusid)) {
-          this.setBounds(Object.values(o._layers)[0]["_bounds"]);
+          let polybounds = (Object.values(o._layers)[0]["_bounds"]);
+          this.map.fitBounds(polybounds, {
+            paddingTopLeft: [0, 0],
+            paddingBottomRight: [100, 0]
+          });
           o.setStyle({ color: "#2C26DE", weight: 5, opacity: 1 }) //highlight specific one
         } else {
           o.setStyle({

@@ -7,6 +7,7 @@ import { reach } from '../../models/reach';
 import { StudyService } from '../../services/study.service';
 import { ToastrService, IndividualConfig } from 'ngx-toastr';
 import * as messageType from '../../../../shared/messageType';
+import { BehaviorSubject } from 'rxjs';
 
 export const DateTimeValidator = (fc: FormControl) => {
   const date = new Date(fc.value);
@@ -34,11 +35,11 @@ export class JobsonsModalComponent implements OnInit {
   }
 
   public get Discharge(): number {
-    return this._discharge;
+    return this.discharge;
   }
   public set Discharge(v: number) {
-    this._discharge = v;
-    this.StudyService.selectedStudy.Discharge = this._discharge;
+    this.discharge = v;
+    this.StudyService.selectedStudy.Discharge = this.discharge;
   }
 
   constructor( config: NgbModalConfig, public activeModal: NgbActiveModal, traveltimeservice: TravelTimeService, mapservice: MapService, studyservice: StudyService, tstrservice: ToastrService) {
@@ -63,10 +64,14 @@ export class JobsonsModalComponent implements OnInit {
   public reachList: Array<any> = [];
   public units;
   public abbrev;
+  public inputIsValid: boolean = false;
+
 
   private _spillMass: number;
 
-  private _discharge: number;
+  public discharge: number;
+  public dischargeSub = new BehaviorSubject<number>(undefined);
+
 
   public reachIDs = [];
   private messager: ToastrService;
@@ -84,8 +89,23 @@ export class JobsonsModalComponent implements OnInit {
   private currentStep = 0;
 
   public FirstReachDischarge;
+  
 
-  log(val) { console.log(val); }
+    log(val) { console.log(val); }
+
+    public validateInputs(): boolean {
+        if (typeof (this.SpillMass) === "number" && typeof (this.discharge) === "number") {
+            return false;
+        } else {
+            return true;
+        }
+
+    }
+
+
+  public updateDischarge(): void {
+      this.FirstReachDischarge = (this.reachList[0]['parameters'][0].value).toFixed(3);
+  }
 
   ngOnInit():  any {   // on init, get the services for first reach, and add them as parameters to accordion
     this.TravelTimeService.getJobsonConfigurationObject() // get reach
@@ -106,8 +126,8 @@ export class JobsonsModalComponent implements OnInit {
    //#region "Methods"
   public setDischarge(): void {
     if (this.reachList.length > 0) {
-      this.StudyService.selectedStudy.Discharge = this._discharge;
-      let accumRatio = [this._discharge];
+      this.StudyService.selectedStudy.Discharge = this.discharge;
+      let accumRatio = [this.discharge];
       let cond = false;
       let value;
 
@@ -118,9 +138,9 @@ export class JobsonsModalComponent implements OnInit {
           value = (item.parameters[1].value / item.parameters[0].value).toFixed(3);
           accumRatio.push(value);
         } else {
-          item.parameters[1].value = this._discharge;
+          //this.FirstReachDischarge = (item.parameters[0].value).toFixed(2);
+          item.parameters[1].value = this.discharge;
           value = (item.parameters[1].value / item.parameters[0].value).toFixed(3);
-          this.FirstReachDischarge = (item.parameters[0].value).toFixed(2);
           accumRatio.push(value);
           cond = true;
         }
@@ -136,7 +156,7 @@ export class JobsonsModalComponent implements OnInit {
 
     }
 
-    this.StudyService.setDischarge(this._discharge);
+    this.StudyService.setDischarge(this.discharge);
   }
 
     public setConc(event): void {
@@ -147,7 +167,7 @@ export class JobsonsModalComponent implements OnInit {
     }
 
   public validateForm(mainForm): boolean {
-
+      console.log(mainForm.$valid);
     if (mainForm.$valid) {
       return true;
     } else {
@@ -202,7 +222,8 @@ export class JobsonsModalComponent implements OnInit {
 	$('#mapWrapper').attr('class', 'half-map');
 	$('#mapHeightToggle').attr('class', 'visible');
 
- this.gettingResults = true;
+    this.gettingResults = true;
+
 
  if (this.dateModel instanceof Date) {
     } else {
