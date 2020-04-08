@@ -9,6 +9,8 @@ import * as L from 'leaflet';
 import * as turf from '@turf/turf';
 import * as $ from 'jquery';
 import { Subscription } from 'rxjs';
+import { walker } from '../../models/walker';
+import { ConsoleReporter } from 'jasmine';
 declare let search_api: any;
 
 @Component({
@@ -36,6 +38,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
   public layerGroup;
   public reportlayerGroup;
   public map: L.Map;
+  public walkerArray: Array<walker> = [];
 
   public evnt;
   @Input() report: boolean;
@@ -216,6 +219,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
                       break;
               case 5: item.value = inputString;
                       break;
+              // tslint:disable-next-line: max-line-length
               case 0: item.value = { id: 3, description: 'Limiting distance in kilometers from starting point', name: 'Distance (km)', value: this.StudyService.distance, valueType: 'numeric' };
             }// end switch
           }); // next item
@@ -241,29 +245,43 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
   public getFlowLineLayerGroup(features) {
     const layerGroup = new L.FeatureGroup([]);
     const reportlayerGroup = new L.FeatureGroup([]);
-
+    this.createWalkers(features);
     features.forEach(i => {
       if (i.geometry.type === 'Point') {
+        // tslint:disable-next-line: max-line-length
         layerGroup.addLayer(L.marker([i.geometry.coordinates[1], i.geometry.coordinates[0]], { icon: L.icon(this.MapService.markerOptions.GagesDownstream) }));
+        // tslint:disable-next-line: max-line-length
         reportlayerGroup.addLayer(L.marker([i.geometry.coordinates[1], i.geometry.coordinates[0]], { icon: L.icon(this.MapService.markerOptions.GagesDownstream) }));
       } else if (typeof i.properties.nhdplus_comid === 'undefined') {
-      } else {
+      } else if (i.geometry.type === 'LineString') {
         layerGroup.addLayer(L.geoJSON(i, this.MapService.markerOptions.Polyline));
         reportlayerGroup.addLayer(L.geoJSON(i, this.MapService.markerOptions.Polyline));
 
         const nhdcomid = 'NHDPLUSid: ' + String(i.properties.nhdplus_comid);
         const drainage = ' Drainage area: ' + String(i.properties.DrainageArea);
-        const temppoint = i.geometry.coordinates[i.geometry.coordinates.length - 1];
+        const head = i.geometry.coordinates[i.geometry.coordinates.length - 2];
+        const tail = i.geometry.coordinates[1];
 
-        layerGroup.addLayer(L.circle([temppoint[1], temppoint[0]], this.MapService.markerOptions.EndNode).bindPopup(nhdcomid + '\n' + drainage));
-        reportlayerGroup.addLayer(L.circle([temppoint[1], temppoint[0]], this.MapService.markerOptions.EndNode).bindPopup(nhdcomid + '\n' + drainage));
 
+        // tslint:disable-next-line: max-line-length
+        this.searchNearest(i, features);
+
+        // tslint:disable-next-line: max-line-length
+        layerGroup.addLayer(L.circle([head[1], head[0]], this.MapService.markerOptions.EndNode).bindPopup(nhdcomid + '\n' + drainage));
+        layerGroup.addLayer(L.circle([tail[1], tail[0]], this.MapService.markerOptions.EndNode2).bindPopup(nhdcomid + '\n' + drainage));
         this.MapService.layerGroup.next(layerGroup);
+
+
+        // tslint:disable-next-line: max-line-length
+        reportlayerGroup.addLayer(L.circle([head[1], head[0]], this.MapService.markerOptions.EndNode).bindPopup(nhdcomid + '\n' + drainage));
+
         this.MapService.reportlayerGroup.next(reportlayerGroup);
 
         i.properties.Length = turf.length(i, { units: 'kilometers' }); // computes actual length; (services return nhdplus length)
-      }
+      } else {}
     });
+
+    console.log (this.walkerArray);
 
     // because it is async it takes time to process function above, once we have it done - we get the bounds
     // Potential to improve
@@ -283,8 +301,46 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
   }
 
 
+  private createWalkers(features){
+    for (let index = 0; index < features.length; index++) {
+      const element = features[index];
+      const walkerObject = new walker();
+      walkerObject.comid = element.properties.nhdplus_comid;
+      this.walkerArray.push(walkerObject);
+    }
+  }
+
+
+  private searchNearest(poi, features) {
+
+    /*const walkerObject = new walker();
+    walkerObject.comid = poi.properties.nhdplus_comid;*/
+
+
+    const head = poi.geometry.coordinates[poi.geometry.coordinates.length - 1];
+
+    features.forEach(i => {
+      if (i.geometry.type === 'Point'){} else {
+      const distance = turf.distance(head, i.geometry.coordinates[0]);
+      console.log (distance);
+      if (distance < 0.02){
+        this.walkerArray.forEach( j => {
+          if (j.comid === poi.properties.nhdplus_comid) {
+            j.to.push(i.properties.nhdplus_comid);
+          } else if (j.comid === i.properties.nhdplus_comid){
+            j.from.push (poi.properties.nhdplus_comid);
+          }
+        })
+      }
+    }
+    })
+
+    console.log (this.walkerArray)
+  }
+
   private formatReaches(data): any {
     const streamArray = [];
+    // tslint:disable-next-line: prefer-for-of
     for (let i = 0; i < data.features.length; i++) {
       if (data.features[i].geometry.type === 'LineString') {
         const polylinePoints = this.deepCopy(data.features[i]);
