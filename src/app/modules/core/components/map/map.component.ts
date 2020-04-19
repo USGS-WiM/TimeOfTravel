@@ -10,7 +10,7 @@ import * as turf from '@turf/turf';
 import * as $ from 'jquery';
 import { Subscription } from 'rxjs';
 import { walker } from '../../models/walker';
-import { ConsoleReporter } from 'jasmine';
+//import { ConsoleReporter } from 'jasmine';
 declare let search_api: any;
 
 @Component({
