@@ -11,7 +11,8 @@ import * as $ from 'jquery';
 import { Subscription } from 'rxjs';
 import { walker } from '../../models/walker';
 //import { ConsoleReporter } from 'jasmine';
-declare let search_api: any;
+import { UpstreamcalculatorService } from '../../services/upstreamcalculator.service';
+ let search_api: any;
 
 @Component({
   selector: "tot-map",
@@ -26,6 +27,8 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
   private MapService: MapService;
   private NavigationService: NavigationService;
   private StudyService: StudyService;
+  private ToTCalculator: UpstreamcalculatorService;
+
   private _layersControl;
   private _bounds;
   private _layers = [];
@@ -83,8 +86,9 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
   //#endregion
 
   //#region "Contructor & ngOnit map subscribers
-  constructor( mapservice: MapService, navigationservice: NavigationService, toastr: ToastrService, studyservice: StudyService) {
+  constructor(mapservice: MapService, ToTCalculator: UpstreamcalculatorService, navigationservice: NavigationService, toastr: ToastrService, studyservice: StudyService) {
     super();
+    this.ToTCalculator = ToTCalculator;
     this.messager = toastr;
     this.MapService = mapservice;
     this.NavigationService = navigationservice;
@@ -228,19 +232,54 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
           this.NavigationService.getRoute('3', config, true).subscribe(response => {
             this.NavigationService.navigationGeoJSON$.next(response);
             response.features.shift();
-            // this.MapService.FlowLines.next(response.features);
+            this.ToTCalculator.passageTimeTest();
+
+
+
             this.getFlowLineLayerGroup(response.features);
             this.StudyService.selectedStudy.Reaches = this.formatReaches(response);
             this.MapService.AddMapLayer({ name: 'Flowlines', layer: this.layerGroup, visible: true });
             this.StudyService.SetWorkFlow('hasReaches', true);
             this.StudyService.selectedStudy.LocationOfInterest = latlng;
             this.StudyService.setProcedure(2);
+
+            this.ComputeTOT(response.features); //attach return to a walker array.
           });
 
         });
     }
 
   }
+
+
+  public ComputeTOT(data) {
+    data.forEach(reach => {
+      if (reach.properties.hasOwnProperty("Discharge")) {
+        const tot = this.ToTCalculator.passageTime(reach.properties.Length, reach.properties.Discharge * 0.0283168, reach.properties.Discharge * 0.0283168, reach.properties.DrainageArea*10^6);
+        //find for the comid, attach time of travel;
+        for (var i = 0; i < this.walkerArray.length; i++) {
+          if (this.walkerArray[i].comid === reach.properties.nhdplus_comid) {
+            this.walkerArray[i].result = tot;
+          }
+        }
+      }
+    })
+    console.log (this.walkerArray);
+  }
+
+  public accDIstance(data) {
+    let dict = {};
+    data.forEach(awalker => {
+      if (awalker.to.length == 0) {
+        //console.log(awalker); //=> this will go and compute TOT for the first reach and start tracing upstream
+        //by adding a previous length and computing time of passage
+        //DA won't change, what changes is the length, mean annual flow. Length gets accumulated, while mean annual flow
+        //is used one that corresponds to the reach.
+      }
+    })
+    //a walker with To array of length of 0 is the beginning of an upstream trace;
+  }
+
 
   public getFlowLineLayerGroup(features) {
     const layerGroup = new L.FeatureGroup([]);
@@ -281,7 +320,9 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
       } else {}
     });
 
-    console.log (this.walkerArray);
+    //console.log(this.walkerArray);
+
+    this.accDIstance(this.walkerArray);
 
     // because it is async it takes time to process function above, once we have it done - we get the bounds
     // Potential to improve
@@ -301,11 +342,15 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
   }
 
 
-  private createWalkers(features){
+  private createWalkers(features) {
     for (let index = 0; index < features.length; index++) {
       const element = features[index];
       const walkerObject = new walker();
       walkerObject.comid = element.properties.nhdplus_comid;
+      walkerObject.length = element.properties.Length;
+      walkerObject.drainage = element.properties.DrainageArea;
+      walkerObject.discharge = element.properties.Discharge;
+      walkerObject.result = 0;
       this.walkerArray.push(walkerObject);
     }
   }
@@ -322,7 +367,6 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
     features.forEach(i => {
       if (i.geometry.type === 'Point'){} else {
       const distance = turf.distance(head, i.geometry.coordinates[0]);
-      console.log (distance);
       if (distance < 0.02){
         this.walkerArray.forEach( j => {
           if (j.comid === poi.properties.nhdplus_comid) {
@@ -334,8 +378,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
       }
     }
     })
-
-    console.log (this.walkerArray)
+    //console.log (this.walkerArray)
   }
 
   private formatReaches(data): any {
