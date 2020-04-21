@@ -5,8 +5,9 @@ export class walker extends deepCopy { //parameters
   public from: Array<any> = [];
   public to: Array<any> = [];
   public result;
+  public accresult;
   public drainage: number;
   public length: number;
   public discharge: number;
-  public isterminal: false;
+  public touched: boolean;
 }

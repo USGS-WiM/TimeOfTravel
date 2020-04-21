@@ -244,6 +244,8 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
             this.StudyService.setProcedure(2);
 
             this.ComputeTOT(response.features); //attach return to a walker array.
+            this.trackFirst(this.walkerArray);
+            console.log(this.walkerArray);
           });
 
         });
@@ -264,20 +266,58 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
         }
       }
     })
-    console.log (this.walkerArray);
   }
 
-  public accDIstance(data) {
-    let dict = {};
+  public trackFirst(data) {
     data.forEach(awalker => {
-      if (awalker.to.length == 0) {
-        //console.log(awalker); //=> this will go and compute TOT for the first reach and start tracing upstream
-        //by adding a previous length and computing time of passage
-        //DA won't change, what changes is the length, mean annual flow. Length gets accumulated, while mean annual flow
-        //is used one that corresponds to the reach.
+      if (awalker.to.length == 0) { //pick up the head node
+        if (awalker.from.length > 0) {
+
+          awalker.accresult = awalker.result;
+          awalker.touched = true;
+
+          awalker.from.forEach(reachcomid => {
+            this.walkerArray.forEach(o => {
+              if (o.comid === reachcomid) {
+                o.accresult = o.result + awalker.accresult;
+                o.touched = true;
+                this.accTOT(this.walkerArray, o);
+                //-> keep tracing upstream ?!
+              }
+            })
+          })
+          //find this comid and add awalker.accresult;
+          //reset to node to something else, and 
+        }
+        //this.accTOT(this.walkerArray, awalker); //start process of tracing upstream
       }
     })
-    //a walker with To array of length of 0 is the beginning of an upstream trace;
+  }
+
+  public accTOT(data, prev) {
+    if (prev.from.length > 0) {
+      prev.from.forEach(comid => {
+        data.forEach(reachWalker => {
+          if (reachWalker.comid === comid) {
+            if (reachWalker.touched) {
+            } else {
+              reachWalker.accresult = prev.accresult + reachWalker.result;
+              reachWalker.touched = true;
+              this.accTOT(this.walkerArray, reachWalker);
+            }
+          }
+        })
+      })
+    } else {
+      data.forEach(reachWalker => {
+        if (reachWalker.comid === prev.comid) {
+          if (reachWalker.to.length === 0) {
+            reachWalker.accresult = reachWalker.result;
+            reachWalker.touched = true;
+          }
+        }
+      })
+    }
   }
 
 
@@ -319,11 +359,6 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
         i.properties.Length = turf.length(i, { units: 'kilometers' }); // computes actual length; (services return nhdplus length)
       } else {}
     });
-
-    //console.log(this.walkerArray);
-
-    this.accDIstance(this.walkerArray);
-
     // because it is async it takes time to process function above, once we have it done - we get the bounds
     // Potential to improve
     setTimeout(() => {
@@ -351,6 +386,8 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
       walkerObject.drainage = element.properties.DrainageArea;
       walkerObject.discharge = element.properties.Discharge;
       walkerObject.result = 0;
+      walkerObject.accresult = 0;
+      walkerObject.touched = false;
       this.walkerArray.push(walkerObject);
     }
   }
@@ -367,7 +404,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
     features.forEach(i => {
       if (i.geometry.type === 'Point'){} else {
       const distance = turf.distance(head, i.geometry.coordinates[0]);
-      if (distance < 0.02){
+      if (distance < 0.01){
         this.walkerArray.forEach( j => {
           if (j.comid === poi.properties.nhdplus_comid) {
             j.to.push(i.properties.nhdplus_comid);
@@ -378,7 +415,6 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
       }
     }
     })
-    //console.log (this.walkerArray)
   }
 
   private formatReaches(data): any {
