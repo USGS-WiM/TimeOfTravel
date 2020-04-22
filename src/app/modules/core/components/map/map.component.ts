@@ -232,20 +232,20 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
           this.NavigationService.getRoute('3', config, true).subscribe(response => {
             this.NavigationService.navigationGeoJSON$.next(response);
             response.features.shift();
-            this.ToTCalculator.passageTimeTest();
+            //this.ToTCalculator.passageTimeTest();
+            this.connectReaches(response.features);
+            this.ComputeTOT(response.features); // attach return to a walker array.
+            this.trackFirst(this.walkerArray);
 
-
+            let flowLine = this.attachResult(response.features);
 
             this.getFlowLineLayerGroup(response.features);
+
             this.StudyService.selectedStudy.Reaches = this.formatReaches(response);
             this.MapService.AddMapLayer({ name: 'Flowlines', layer: this.layerGroup, visible: true });
             this.StudyService.SetWorkFlow('hasReaches', true);
             this.StudyService.selectedStudy.LocationOfInterest = latlng;
             this.StudyService.setProcedure(2);
-
-            this.ComputeTOT(response.features); // attach return to a walker array.
-            this.trackFirst(this.walkerArray);
-            console.log(this.walkerArray);
           });
 
         });
@@ -253,6 +253,17 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
 
   }
 
+  public attachResult(features) {
+    this.walkerArray.forEach(reach => {
+      features.forEach(flowline => {
+        if (flowline.properties.nhdplus_comid === reach.comid) {
+          flowline.properties.result = reach.accresult;
+        }
+      })
+    })
+
+    return (features);
+  }
 
   public ComputeTOT(data) {
     data.forEach(reach => {
@@ -306,7 +317,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
               console.log (reachWalker.comid);
               console.log ("Accumulated TOT");
               console.log (Number.isNaN(reachWalker.accresult));*/
-              if (Number.isNaN(reachWalker.accresult)){
+              if (Number.isNaN(reachWalker.accresult)) {
                 reachWalker.accresult = reachWalker.result;
               }
               reachWalker.touched = true;
@@ -328,6 +339,19 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
   }
 
 
+  public connectReaches(features) {
+    this.createWalkers(features);
+    features.forEach(i => {
+      if (i.geometry.type === 'Point') {
+      } else if (typeof i.properties.nhdplus_comid === 'undefined') {
+      } else if (i.geometry.type === 'LineString') {
+        this.searchNearest(i, features);
+        i.properties.Length = turf.length(i, { units: 'kilometers' }); // computes actual length; (services return nhdplus length)
+      } else {}
+    });
+  }
+
+
   public getFlowLineLayerGroup(features) {
     const layerGroup = new L.FeatureGroup([]);
     const reportlayerGroup = new L.FeatureGroup([]);
@@ -340,31 +364,33 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
         reportlayerGroup.addLayer(L.marker([i.geometry.coordinates[1], i.geometry.coordinates[0]], { icon: L.icon(this.MapService.markerOptions.GagesDownstream) }));
       } else if (typeof i.properties.nhdplus_comid === 'undefined') {
       } else if (i.geometry.type === 'LineString') {
-        layerGroup.addLayer(L.geoJSON(i, this.MapService.markerOptions.Polyline));
+
         reportlayerGroup.addLayer(L.geoJSON(i, this.MapService.markerOptions.Polyline));
+        let color = this.getColor(i.properties.result);
+        layerGroup.addLayer(L.geoJSON(i, {
+          style: function () {
+            return {
+              "opacity": 1,
+              "color": color
+            }
+          }
+        }));
+        
+
 
         const nhdcomid = 'NHDPLUSid: ' + String(i.properties.nhdplus_comid);
         const drainage = ' Drainage area: ' + String(i.properties.DrainageArea);
         const head = i.geometry.coordinates[i.geometry.coordinates.length - 2];
         const tail = i.geometry.coordinates[1];
-
-
-        // tslint:disable-next-line: max-line-length
-        this.searchNearest(i, features);
-
         // tslint:disable-next-line: max-line-length
         layerGroup.addLayer(L.circle([head[1], head[0]], this.MapService.markerOptions.EndNode).bindPopup(nhdcomid + '\n' + drainage));
         layerGroup.addLayer(L.circle([tail[1], tail[0]], this.MapService.markerOptions.EndNode2).bindPopup(nhdcomid + '\n' + drainage));
         this.MapService.layerGroup.next(layerGroup);
-
-
         // tslint:disable-next-line: max-line-length
         reportlayerGroup.addLayer(L.circle([head[1], head[0]], this.MapService.markerOptions.EndNode).bindPopup(nhdcomid + '\n' + drainage));
-
         this.MapService.reportlayerGroup.next(reportlayerGroup);
-
-        i.properties.Length = turf.length(i, { units: 'kilometers' }); // computes actual length; (services return nhdplus length)
-      } else {}
+        //i.properties.Length = turf.length(i, { units: 'kilometers' }); // computes actual length; (services return nhdplus length)
+      } else { }
     });
     // because it is async it takes time to process function above, once we have it done - we get the bounds
     // Potential to improve
@@ -372,6 +398,14 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
       this.MapService.setBounds(layerGroup.getBounds());
     });
   }
+
+    public getColor(x) {
+      return x < 5 ? '#bd0026' :
+        x < 10 ? '#f03b20' :
+          x < 30 ? '#fd8d3c' :
+            x < 50 ? '#fecc5c' :
+              '#ffffb2';
+    };
 
 
   private sm(msg: string, mType: string = messageType.INFO, title?: string, timeout?: number) {
