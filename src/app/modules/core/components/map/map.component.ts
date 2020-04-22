@@ -10,7 +10,7 @@ import * as turf from '@turf/turf';
 import * as $ from 'jquery';
 import { Subscription } from 'rxjs';
 import { walker } from '../../models/walker';
-//import { ConsoleReporter } from 'jasmine';
+// import { ConsoleReporter } from 'jasmine';
 import { UpstreamcalculatorService } from '../../services/upstreamcalculator.service';
  let search_api: any;
 
@@ -105,7 +105,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
     });
 
     this.NavigationService.navigationGeoJSON$.subscribe(data => {
-      //console.log(data);
+      // console.log(data);
     });
     //#region "Base layer and overlay subscribers"
     // method to subscribe to the layers
@@ -243,7 +243,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
             this.StudyService.selectedStudy.LocationOfInterest = latlng;
             this.StudyService.setProcedure(2);
 
-            this.ComputeTOT(response.features); //attach return to a walker array.
+            this.ComputeTOT(response.features); // attach return to a walker array.
             this.trackFirst(this.walkerArray);
             console.log(this.walkerArray);
           });
@@ -258,7 +258,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
     data.forEach(reach => {
       if (reach.properties.hasOwnProperty("Discharge")) {
         const tot = this.ToTCalculator.passageTime(reach.properties.Length, reach.properties.Discharge * 0.0283168, reach.properties.Discharge * 0.0283168, reach.properties.DrainageArea*10^6);
-        //find for the comid, attach time of travel;
+        // find for the comid, attach time of travel;
         for (var i = 0; i < this.walkerArray.length; i++) {
           if (this.walkerArray[i].comid === reach.properties.nhdplus_comid) {
             this.walkerArray[i].result = tot;
@@ -270,7 +270,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
 
   public trackFirst(data) {
     data.forEach(awalker => {
-      if (awalker.to.length == 0) { //pick up the head node
+      if (awalker.to.length == 0) { // pick up the head node
         if (awalker.from.length > 0) {
 
           awalker.accresult = awalker.result;
@@ -282,14 +282,14 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
                 o.accresult = o.result + awalker.accresult;
                 o.touched = true;
                 this.accTOT(this.walkerArray, o);
-                //-> keep tracing upstream ?!
+                // -> keep tracing upstream ?!
               }
             })
           })
-          //find this comid and add awalker.accresult;
-          //reset to node to something else, and 
+          // find this comid and add awalker.accresult;
+          // reset to node to something else, and
         }
-        //this.accTOT(this.walkerArray, awalker); //start process of tracing upstream
+        // this.accTOT(this.walkerArray, awalker); //start process of tracing upstream
       }
     })
   }
@@ -302,12 +302,19 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
             if (reachWalker.touched) {
             } else {
               reachWalker.accresult = prev.accresult + reachWalker.result;
+              /*console.log ("Result comid");
+              console.log (reachWalker.comid);
+              console.log ("Accumulated TOT");
+              console.log (Number.isNaN(reachWalker.accresult));*/
+              if (Number.isNaN(reachWalker.accresult)){
+                reachWalker.accresult = reachWalker.result;
+              }
               reachWalker.touched = true;
               this.accTOT(this.walkerArray, reachWalker);
             }
           }
-        })
-      })
+        });
+      });
     } else {
       data.forEach(reachWalker => {
         if (reachWalker.comid === prev.comid) {
@@ -316,7 +323,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
             reachWalker.touched = true;
           }
         }
-      })
+      });
     }
   }
 
@@ -404,7 +411,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit {
     features.forEach(i => {
       if (i.geometry.type === 'Point'){} else {
       const distance = turf.distance(head, i.geometry.coordinates[0]);
-      if (distance < 0.01){
+      if (distance < 0.01) {
         this.walkerArray.forEach( j => {
           if (j.comid === poi.properties.nhdplus_comid) {
             j.to.push(i.properties.nhdplus_comid);
