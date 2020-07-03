@@ -203,7 +203,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit, OnC
 
       if (this.StudyService.selectedStudy.MethodType == 'response') {
         this.setPOI(evnt.latlng, 'downstream');
-        //this.setPoiUpstreamGage(evnt.latlng, 'upstream');
+        this.setPoiUpstreamGage(evnt.latlng, 'upstream');
       } else {
         this.setPOI(evnt.latlng, 'upstream');
       }
@@ -242,14 +242,8 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit, OnC
         this.NavigationService.getRoute('3', config, true).subscribe(response => {
           this.NavigationService.navigationGeoJSON$.next(response);
           response.features.shift();
-          console.log(response);
-          // this.MapService.FlowLines.next(response.features);
           this.getFlowLineLayerGroup(response.features, true);
-          //this.StudyService.selectedStudy.Reaches = this.formatReaches(response);
-          this.MapService.AddMapLayer({ name: 'Flowlines', layer: this.layerGroup, visible: true });
-          //this.StudyService.SetWorkFlow('hasReaches', true);
-          //this.StudyService.selectedStudy.LocationOfInterest = latlng;
-          //this.StudyService.setProcedure(2);
+          this.MapService.AddMapLayer({ name: 'UpstreamGages', layer: this.layerGroup, visible: true });
         });
       });
   }
@@ -381,7 +375,9 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit, OnC
     // because it is async it takes time to process function above, once we have it done - we get the bounds
     // Potential to improve
     setTimeout(() => {
-      this.MapService.setBounds(layerGroup.getBounds());
+      if (cond) { } else {
+        this.MapService.setBounds(layerGroup.getBounds());
+      }
     });
   }
 
