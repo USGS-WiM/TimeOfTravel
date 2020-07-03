@@ -258,6 +258,7 @@ export class MapService {
       let gage = site[i];
       let siteid = (gage.properties.identifier.replace("USGS-", ""));
       let baseurl = "https://waterservices.usgs.gov/nwis/iv/?format=json&sites=" + siteid + "&parameterCd=00060&siteStatus=active";
+      console.log(baseurl);
       this.http.get<any>(baseurl).subscribe(result => {
         this.gages.push(result);
         this.updateGageData(result, gage);

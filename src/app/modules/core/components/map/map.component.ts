@@ -76,13 +76,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit, OnC
     return this.MapService.Options;
   }
 
-
-
-
-
   // <!--"MapOptions"-->
-
-
   optionsSpec: any = {
     layers: [{ url: 'http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', attribution: 'Open Street Map' }],
     zoom: 5,
@@ -209,6 +203,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit, OnC
 
       if (this.StudyService.selectedStudy.MethodType == 'response') {
         this.setPOI(evnt.latlng, 'downstream');
+        //this.setPoiUpstreamGage(evnt.latlng, 'upstream');
       } else {
         this.setPOI(evnt.latlng, 'upstream');
       }
@@ -216,6 +211,50 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit, OnC
   }
 
   //#endregion
+
+
+  private setPoiUpstreamGage(latlng: L.LatLng, inputString: string) {
+    console.log('triggered upstream gage');
+    const marker = L.marker(latlng);
+    this.NavigationService.getNavigationResource('3')
+      .toPromise().then(data => {
+        const config: Array<any> = data.configuration;
+        config.forEach(item => {
+          switch (item.id) {
+            case 1: item.value = marker.toGeoJSON().geometry;
+              item.value.crs = { properties: { name: 'EPSG:4326' }, type: 'name' };
+              break;
+            case 6: item.value = ['flowline', 'nwisgage']; // "flowline", "wqpsite", "streamStatsgage", "nwisgage"
+              break;
+            case 5: item.value = inputString;
+              break;
+            case 0: if (this.StudyService.isMetric()) {
+              item.value = { id: 3, description: 'Limiting distance in kilometers from starting point', name: 'Distance (km)', value: this.StudyService.distance, valueType: 'numeric' };
+            } else {
+              var imp_distance = this.StudyService.distance * 1.609344; //converts miles to kilometers
+              item.value = { id: 3, description: 'Limiting distance in kilometers from starting point', name: 'Distance (km)', value: imp_distance, valueType: 'numeric' };
+            }
+
+          }// end switch
+        }); // next item
+        return config;
+      }).then(config => {
+        this.NavigationService.getRoute('3', config, true).subscribe(response => {
+          this.NavigationService.navigationGeoJSON$.next(response);
+          response.features.shift();
+          console.log(response);
+          // this.MapService.FlowLines.next(response.features);
+          this.getFlowLineLayerGroup(response.features, true);
+          //this.StudyService.selectedStudy.Reaches = this.formatReaches(response);
+          this.MapService.AddMapLayer({ name: 'Flowlines', layer: this.layerGroup, visible: true });
+          //this.StudyService.SetWorkFlow('hasReaches', true);
+          //this.StudyService.selectedStudy.LocationOfInterest = latlng;
+          //this.StudyService.setProcedure(2);
+        });
+      });
+  }
+
+
 
   //#region "Helper methods (create FeatureGroup layer)"
   private setPOI(latlng: L.LatLng, inputString: string) {
@@ -262,8 +301,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit, OnC
             this.NavigationService.navigationGeoJSON$.next(response);
             response.features.shift();
             // this.MapService.FlowLines.next(response.features);
-            console.log(response);
-            this.getFlowLineLayerGroup(response.features);
+            this.getFlowLineLayerGroup(response.features, false);
             this.StudyService.selectedStudy.Reaches = this.formatReaches(response);
             this.MapService.AddMapLayer({ name: 'Flowlines', layer: this.layerGroup, visible: true });
             this.StudyService.SetWorkFlow('hasReaches', true);
@@ -274,7 +312,7 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit, OnC
     }
   }
 
-  public getFlowLineLayerGroup(features) {
+  public getFlowLineLayerGroup(features, cond: Boolean) {
     const layerGroup = new L.FeatureGroup([]);
     const reportlayerGroup = new L.FeatureGroup([]);
     let gagesArray = [];
@@ -293,26 +331,26 @@ export class MapComponent extends deepCopy implements OnInit, AfterViewInit, OnC
         gagesArray.push(i);
       } else if (typeof i.properties.nhdplus_comid === 'undefined') {
       } else {
+
+        if (cond) { } else {
         if (i.properties.StreamRiver > 50 || i.properties.Artificial > 50 && i.properties.IsWaterBody == 0) {
           layerGroup.addLayer(L.geoJSON(i, this.MapService.markerOptions.Polyline));
           reportlayerGroup.addLayer(L.geoJSON(i, this.MapService.markerOptions.Polyline));
           this.isfirst = false;
         } else {
-          /*if (this.isfirst) {
-            this.sm("Warning: you selected point inside of the water body, please change location....")
-            this.MapService.isInsideWaterBody.next(true);
-          }*/
           layerGroup.addLayer(L.geoJSON(i, this.MapService.markerOptions.Polyline_break));
           reportlayerGroup.addLayer(L.geoJSON(i, this.MapService.markerOptions.Polyline_break));
         }
+        }
 
+        if (cond) { } else {
         const nhdcomid = 'NHDPLUSid: ' + String(i.properties.nhdplus_comid);
         const drainage = ' Drainage area: ' + String(i.properties.DrainageArea);
         const temppoint = i.geometry.coordinates[i.geometry.coordinates.length - 1];
 
         layerGroup.addLayer(L.circle([temppoint[1], temppoint[0]], this.MapService.markerOptions.EndNode).bindPopup(nhdcomid + '\n' + drainage));
         reportlayerGroup.addLayer(L.circle([temppoint[1], temppoint[0]], this.MapService.markerOptions.EndNode).bindPopup(nhdcomid + '\n' + drainage));
-
+          }
         this.MapService.layerGroup.next(layerGroup);
         this.MapService.reportlayerGroup.next(reportlayerGroup);
 
